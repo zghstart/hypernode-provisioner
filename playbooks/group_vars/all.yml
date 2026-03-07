@@ -1,0 +1,30 @@
+# Global variables for all groups
+---
+# Network configuration
+http_proxy: ""
+https_proxy: ""
+apt_mirror: "http://archive.ubuntu.com/ubuntu"
+huggingface_mirror: ""
+
+# NVIDIA driver configuration
+nvidia_driver_version: "550"
+nvidia_driver_package: "nvidia-driver-{{ nvidia_driver_version }}-open"
+nvidia_fabricmanager_package: "nvidia-fabricmanager-{{ nvidia_driver_version }}"
+
+# CUDA configuration
+cuda_version: "12.4"
+cuda_version_short: "12-4"
+cuda_toolkit_package: "cuda-toolkit-{{ cuda_version_short }}"
+
+# CUDA installation path
+cuda_path: "/usr/local/cuda"
+cuda_bin_path: "{{ cuda_path }}/bin"
+cuda_lib_path: "{{ cuda_path }}/lib64"
+
+# System configuration
+irqbalance_disabled: true
+nvidia_persistenced: true
+
+# Benchmark configuration
+benchmark_results_dir: "/tmp/benchmark_results"
+gpu_burn_duration: 300

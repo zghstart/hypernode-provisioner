@@ -1,0 +1,122 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  backend:
+    name: Build & Deploy Backend
+    runs-on: ubuntu-latest
+    environment: production
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: gradle
+      
+      - name: Build production JAR
+        run: |
+          cd backend
+          chmod +x gradlew
+          ./gradlew clean assemble -Dspring.profiles.active=prod
+      
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+      
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          push: true
+          tags: |
+            ${{ secrets.DOCKER_HUB_USERNAME }}/hypernode-backend:${{ github.sha }}
+            ${{ secrets.DOCKER_HUB_USERNAME }}/hypernode-backend:latest
+      
+      - name: Deploy to server
+        if: github.ref == 'refs/heads/main'
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
+        run: |
+          echo "${DEPLOY_KEY}" > deploy_key
+          chmod 600 deploy_key
+          scp -i deploy_key -o StrictHostKeyChecking=no ./backend/build/libs/*.jar ${DEPLOY_USER}@${DEPLOY_HOST}:/opt/hypernode/backend.jar
+          ssh -i deploy_key -o StrictHostKeyChecking=no ${DEPLOY_USER}@${DEPLOY_HOST} "docker-compose -f /opt/hypernode/docker-compose.yml pull backend && docker-compose -f /opt/hypernode/docker-compose.yml up -d backend"
+          rm -f deploy_key
+
+  frontend:
+    name: Build & Deploy Frontend
+    runs-on: ubuntu-latest
+    environment: production
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+      
+      - name: Install dependencies
+        run: |
+          cd frontend
+          npm ci
+      
+      - name: Build application
+        run: |
+          cd frontend
+          npm run build
+      
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+      
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          push: true
+          tags: |
+            ${{ secrets.DOCKER_HUB_USERNAME }}/hypernode-frontend:${{ github.sha }}
+            ${{ secrets.DOCKER_HUB_USERNAME }}/hypernode-frontend:latest
+      
+      - name: Deploy to server
+        if: github.ref == 'refs/heads/main'
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
+        run: |
+          echo "${DEPLOY_KEY}" > deploy_key
+          chmod 600 deploy_key
+          ssh -i deploy_key -o StrictHostKeyChecking=no ${DEPLOY_USER}@${DEPLOY_HOST} "docker-compose -f /opt/hypernode/docker-compose.yml pull frontend && docker-compose -f /opt/hypernode/docker-compose.yml up -d frontend"
+          rm -f deploy_key
+
+  notify:
+    name: Notify Deployment
+    runs-on: ubuntu-latest
+    needs: [backend, frontend]
+    
+    steps:
+      - name: Send notification
+        run: |
+          echo "Deployment completed for commit: ${{ github.sha }}"
+          echo "Backend: ${{ secrets.DOCKER_HUB_USERNAME }}/hypernode-backend:${{ github.sha }}"
+          echo "Frontend: ${{ secrets.DOCKER_HUB_USERNAME }}/hypernode-frontend:${{ github.sha }}"

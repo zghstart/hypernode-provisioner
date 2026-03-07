@@ -1,0 +1,125 @@
+---
+# rollback_gpu_node.yml
+# GPU 算力节点回滚脚本
+# 在部署失败或需要回退时使用
+
+- name: GPU Node Rollback
+  hosts: gpu_nodes
+  become: true
+  gather_facts: true
+  serial: 1
+  vars_files:
+    - group_vars/all.yml
+
+  # ============================================================
+  # Rollback Phase 1: Stop GPU Services
+  # ============================================================
+  - name: Rollback - Stop GPU Services
+    block:
+      - name: Stop nvidia-persistenced service
+        service:
+          name: nvidia-persistenced
+          state: stopped
+          enabled: false
+
+      - name: Disable persistence mode
+        command: nvidia-smi -pm 0
+        changed_when: false
+        failed_when: false
+
+  # ============================================================
+  # Rollback Phase 2: Uninstall NVIDIA Driver
+  # ============================================================
+  - name: Rollback - Uninstall NVIDIA Driver
+    block:
+      - name: Uninstall NVIDIA driver
+        apt:
+          name: "{{ nvidia_driver_package }}"
+          state: absent
+          autoremove: true
+
+      - name: Uninstall NVIDIA fabric manager
+        apt:
+          name: "{{ nvidia_fabricmanager_package }}"
+          state: absent
+          autoremove: true
+
+      - name: Remove NVIDIA blacklist configuration
+        file:
+          path: /etc/modprobe.d/blacklist-nouveau.conf
+          state: absent
+
+  # ============================================================
+  # Rollback Phase 3: Re-enable Nouveau
+  # ============================================================
+  - name: Rollback - Re-enable Nouveau
+    block:
+      - name: Remove Nouveau blacklist configuration
+        file:
+          path: /etc/modprobe.d/blacklist-nouveau.conf
+          state: absent
+        changed_when: false
+
+      - name: Update initramfs to restore Nouveau
+        command: update-initramfs -u
+        notify: Reboot Server
+
+  # ============================================================
+  # Rollback Phase 4: Remove CUDA Toolkit
+  # ============================================================
+  - name: Rollback - Remove CUDA Toolkit
+    block:
+      - name: Remove CUDA toolkit
+        apt:
+          name: "{{ cuda_toolkit_package }}"
+          state: absent
+          autoremove: true
+
+      - name: Remove CUDA environment script
+        file:
+          path: /etc/profile.d/cuda.sh
+          state: absent
+
+      - name: Remove CUDA installation directory
+        file:
+          path: "{{ cuda_path }}"
+          state: absent
+        ignore_errors: true
+
+  # ============================================================
+  # Rollback Phase 5: Restore Network Configuration
+  # ============================================================
+  - name: Rollback - Restore Network Configuration
+    block:
+      - name: Re-enable irqbalance service
+        service:
+          name: irqbalance
+          state: started
+          enabled: true
+
+      - name: Clear IRQ affinity script
+        file:
+          path: /opt/scripts/configure_irq_affinity.sh
+          state: absent
+        ignore_errors: true
+
+  # ============================================================
+  # Rollback Phase 6: Clean APT Cache
+  # ============================================================
+  - name: Rollback - Clean APT Cache
+    block:
+      - name: Clean APT cache
+        apt:
+          clean: true
+
+  handlers:
+    - name: Reboot Server
+      reboot:
+        msg: "Rebooting for rollback"
+        post_reboot_delay: 60
+        connect_timeout: 60
+      when: ansible_reboot_pending | default(false) | bool
+
+  # ============================================================
+  # Rollback End
+  # ============================================================

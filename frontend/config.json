@@ -1,0 +1,32 @@
+# HyperNode-Provisioner Frontend
+# Next.js 14 Application Configuration
+
+# Application configuration
+app:
+  name: "HyperNode-Provisioner"
+  version: "0.1.0"
+
+# API configuration
+api:
+  baseUrl: "http://localhost:8080/api/v1"
+  timeout: 30000
+
+# UI configuration
+ui:
+  theme: "dark"
+  animation: "framer-motion"
+  toast:
+    position: "top-right"
+    duration: 3000
+
+# Features
+features:
+  sse: true
+  redisStreams: true
+  gpuMonitoring: true
+  benchmark: true
+
+# Redis configuration for frontend
+redis:
+  host: "localhost"
+  port: 6379

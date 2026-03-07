@@ -1,0 +1,12 @@
+# Inventory file for HyperNode-Provisioner
+# Usage: ansible-playbook -i hosts provision_gpu_node.yml
+
+[gpu_nodes]
+# Example host entry:
+# gpu-node-01 ansible_host=192.168.1.10 ansible_port=22 ansible_user=deploy
+
+[gpu_nodes:vars]
+# Global variables for all GPU nodes
+ansible_python_interpreter=/usr/bin/python3
+nvidia_driver_version="550"
+cuda_version="12.4"

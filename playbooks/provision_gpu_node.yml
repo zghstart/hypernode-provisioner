@@ -1,0 +1,211 @@
+---
+# provision_gpu_node.yml
+# GPU 算力节点自动化配置脚本
+# 从纯净 Ubuntu 22.04/24.04 裸金属开始，完成底层硬件调优和 NVIDIA 生态部署
+
+- name: GPU Node Provisioning
+  hosts: gpu_nodes
+  become: true
+  gather_facts: true
+  serial: 1
+  vars_files:
+    - group_vars/all.yml
+    - group_vars/gpu_nodes.yml
+
+  # ============================================================
+  # Phase 1: Environment Pre-flight Check (只读不写)
+  # ============================================================
+  - name: Pre-flight Check - NTP Synchronization
+    block:
+      - name: Check NTP synchronization status
+        command: chronyc sources
+        register: ntp_status
+        changed_when: false
+
+      - name: Verify NTP is synchronized
+        assert:
+          that:
+            - "'^*' in ntp_status.stdout" or "'^+' in ntp_status.stdout"
+          fail_msg: "NTP is not synchronized. Please sync time first."
+          success_msg: "NTP synchronization verified."
+
+  - name: Pre-flight Check - NIC Firmware
+    block:
+      - name: Check InfiniBand NIC firmware version
+        command: mstflint -d {{ mbx_interface }} query
+        register: nic_firmware
+        changed_when: false
+        failed_when: false
+
+      - name: Report NIC firmware information
+        debug:
+          msg: "NIC Firmware: {{ nic_firmware.stdout_lines | join('\n') if nic_firmware.stdout else 'N/A' }}"
+
+  - name: Pre-flight Check - IRQ Affinity
+    block:
+      - name: Check current IRQ affinity configuration
+        command: bash -c "for i in /proc/irq/*/smp_affinity_list; do echo $i: $(cat $i); done"
+        register: irq_affinity
+        changed_when: false
+
+      - name: Report IRQ affinity information
+        debug:
+          msg: "IRQ Affinity:\n{{ irq_affinity.stdout }}"
+
+  # ============================================================
+  # Phase 2: Disable Nouveau Driver
+  # ============================================================
+  - name: Disable Nouveau Driver
+    block:
+      - name: Create blacklist configuration for Nouveau
+        copy:
+          content: |
+            blacklist nouveau
+            blacklist lbm-nouveau
+            options nouveau modeset=0
+          dest: /etc/modprobe.d/blacklist-nouveau.conf
+          mode: '0644'
+        notify: Reboot Server
+
+      - name: Update initramfs
+        command: update-initramfs -u
+        notify: Reboot Server
+
+  # ============================================================
+  # Phase 3: Configure APT Sources with Proxy Support
+  # ============================================================
+  - name: Configure APT Sources
+    block:
+      - name: Install CUDA repository keyring
+        apt:
+          name: https://developer.download.nvidia.com/compute/cuda/repos/ubuntu{{ ansible_distribution_version | replace('.', '') }}/x86_64/cuda-keyring_1.1-1_all.deb
+          state: present
+          force_apt_get: true
+        environment:
+          http_proxy: "{{ http_proxy }}"
+          https_proxy: "{{ https_proxy }}"
+
+      - name: Update APT cache
+        apt:
+          update_cache: true
+        environment:
+          http_proxy: "{{ http_proxy }}"
+          https_proxy: "{{ https_proxy }}"
+
+  # ============================================================
+  # Phase 4: Install NVIDIA Driver and Fabric Manager
+  # ============================================================
+  - name: Install NVIDIA Driver and Fabric Manager
+    block:
+      - name: Install NVIDIA driver with version pinning
+        apt:
+          name:
+            - "{{ nvidia_driver_package }}"
+            - "{{ nvidia_fabricmanager_package }}"
+          state: present
+          force_apt_get: true
+        environment:
+          http_proxy: "{{ http_proxy }}"
+          https_proxy: "{{ https_proxy }}"
+        notify: Reboot Server
+
+  # ============================================================
+  # Phase 5: Install CUDA Toolkit
+  # ============================================================
+  - name: Install CUDA Toolkit
+    block:
+      - name: Install CUDA toolkit
+        apt:
+          name: "{{ cuda_toolkit_package }}"
+          state: present
+          force_apt_get: true
+        environment:
+          http_proxy: "{{ http_proxy }}"
+          https_proxy: "{{ https_proxy }}"
+
+  # ============================================================
+  # Phase 6: Configure Environment Variables
+  # ============================================================
+  - name: Configure Environment Variables
+    block:
+      - name: Create CUDA environment script
+        copy:
+          content: |
+            #!/bin/bash
+            # CUDA environment configuration
+            # Warning: Do not modify PATH directly to avoid conflicts with Conda
+
+            export CUDA_HOME={{ cuda_path }}
+            export PATH={{ cuda_bin_path }}:$PATH
+            export LD_LIBRARY_PATH={{ cuda_lib_path }}:$LD_LIBRARY_PATH
+          dest: /etc/profile.d/cuda.sh
+          mode: '0755'
+
+  # ============================================================
+  # Phase 7: Enable NVIDIA Persistence Mode
+  # ============================================================
+  - name: Enable NVIDIA Persistence Mode
+    block:
+      - name: Start nvidia-persistenced service
+        service:
+          name: nvidia-persistenced
+          state: started
+          enabled: true
+
+      - name: Enable persistence mode via nvidia-smi
+        command: nvidia-smi -pm 1
+        changed_when: false
+        failed_when: false
+
+  # ============================================================
+  # Phase 8: Network Performance Tuning
+  # ============================================================
+  - name: Network Performance Tuning
+    block:
+      - name: Disable irqbalance service
+        service:
+          name: irqbalance
+          state: stopped
+          enabled: false
+
+      - name: Configure interrupt affinity for IB NIC
+        script: configure_irq_affinity.sh {{ ib_interface }}
+        args:
+          executable: /bin/bash
+        changes_directory: /opt/scripts
+        when: irq_affinity_script is defined
+
+  # ============================================================
+  # Phase 9: Benchmark and Validation
+  # ============================================================
+  - name: Run Post-Provision Validation
+    block:
+      - name: Verify NVIDIA driver is loaded
+        command: nvidia-smi
+        register: nvidia_smi
+        changed_when: false
+
+      - name: Display GPU status
+        debug:
+          msg: "{{ nvidia_smi.stdout_lines }}"
+
+      - name: Check CUDA installation
+        command: nvcc --version
+        register: nvcc_version
+        changed_when: false
+
+      - name: Display CUDA version
+        debug:
+          msg: "{{ nvcc_version.stdout_lines }}"
+
+  handlers:
+    - name: Reboot Server
+      reboot:
+        msg: "Rebooting for driver installation"
+        post_reboot_delay: 60
+        connect_timeout: 60
+      when: ansible_reboot_pending | default(false) | bool
+
+  # ============================================================
+  # Playbook End
+  # ============================================================

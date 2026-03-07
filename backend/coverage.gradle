@@ -1,0 +1,33 @@
+# HyperNode-Provisioner
+# Java test coverage threshold
+
+jacoco {
+    toolVersion = "0.8.11"
+}
+
+tasks.jacocoTestReport {
+    dependsOn tasks.test
+    reports {
+        xml.required = true
+        html.required = true
+    }
+    classDirectories.setFrom(files(classDirectories.files.collect {
+        fileTree(dir: it, excludes: [
+            '**/*Test*',
+            '**/*Config*',
+            '**/*Application*',
+            '**/*Controller*',
+            '**/generated/**'
+        ])
+    }))
+}
+
+tasks.jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            limit {
+                minimum = 0.7  // 70% coverage minimum
+            }
+        }
+    }
+}

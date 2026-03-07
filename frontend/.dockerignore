@@ -1,0 +1,44 @@
+# Dependencies
+node_modules/
+
+# Build artifacts
+.next/
+out/
+build/
+
+# Logs
+*.log
+npm-debug.log*
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Test
+__tests__/
+*.test.tsx
+*.test.ts
+coverage/
+
+# Docker
+Dockerfile*
+.docker/
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+*.md
+docs/
+
+# CI/CD
+.github/
+.github/

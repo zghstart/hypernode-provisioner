@@ -1,0 +1,65 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.4.3'
+    id 'io.spring.dependency-management' version '1.1.7'
+    id 'jacoco'
+}
+
+group = 'com.hypernode'
+version = '0.3.0'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // --- Spring Boot starters ---
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+
+    // --- Third-party Integrations ---
+    implementation 'org.springframework.vault:spring-vault-core:3.2.0'
+    implementation 'io.projectreactor:reactor-core'
+    runtimeOnly 'org.postgresql:postgresql:42.7.4'
+    implementation 'org.flywaydb:flyway-core'
+    runtimeOnly 'org.flywaydb:flyway-database-postgresql'
+
+    // --- Hibernate Types for JSON support ---
+    implementation 'io.hypersistence:hypersistence-utils-hibernate-63:3.9.0'
+
+    // --- Lombok (正确、优雅的引入方式) ---
+    compileOnly 'org.projectlombok:lombok:1.18.34'
+    annotationProcessor 'org.projectlombok:lombok:1.18.34'
+
+    // --- Testing ---
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
+    testImplementation 'io.projectreactor:reactor-test'
+
+    // 如果测试代码中也用到了 Lombok，需要加上这两行
+    testCompileOnly 'org.projectlombok:lombok:1.18.34'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.34'
+}
+
+// 统一配置 Java 编译参数
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.compilerArgs << '-parameters'
+}
+
+bootRun {
+    environment 'SPRING_PROFILES_ACTIVE', 'dev'
+}
+
+jar {
+    enabled = false
+}

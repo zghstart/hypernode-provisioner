@@ -1,0 +1,38 @@
+# Backend
+/build/
+!.gradle/
+gradle/wrapper/gradle-wrapper.jar
+gradlew
+gradlew.bat
+!gradle/wrapper/gradle-wrapper.jar
+
+# IDE
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+logs/
+build/reports/
+coverage/
+
+# Security
+credentials.json
+secrets/
+*.key
+*.p12
+
+# Docker
+.dockerignore
+Dockerfile*
+
+# OS
+.DS_Store
+Thumbs.db

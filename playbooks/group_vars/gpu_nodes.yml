@@ -1,0 +1,18 @@
+# GPU-specific variables
+---
+# GPU topology detection
+gpu_topology: auto
+
+# NUMA configuration
+numa_enabled: true
+numa_balancing: "echo 1 > /proc/sys/kernel/numa_balancing"
+
+# Interrupt affinity configuration
+irq_affinity_script: "/opt/scripts/configure_irq_affinity.sh"
+
+# Network configuration for InfiniBand
+ib_interface: "ib0"
+mbx_interface: "mlx5_0"
+
+# OFED configuration
+ofed_tune_profile: "HIGH_THROUGHPUT"

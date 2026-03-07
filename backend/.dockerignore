@@ -1,0 +1,28 @@
+# Backend
+/build/
+.gradle/
+logs/
+
+# IDE
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Security
+credentials.json
+secrets/
+*.key
+*.p12
+
+# Test reports
+build/reports/
+coverage/
+
+# Mac
+.DS_Store
