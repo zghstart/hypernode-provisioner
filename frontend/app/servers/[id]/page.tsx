@@ -20,10 +20,16 @@ interface SpecData {
   kernel?: string
   os?: string
   gpu?: string
+  nvlink?: string
+  ib?: string
+  network?: string
+  numa?: string
+  pcie?: string
   cuda?: string
   docker?: string
+  k8s?: string
+  containerd?: string
   collectedAt?: number
-  error?: string
 }
 
 const connectColors: Record<string, string> = {
@@ -198,9 +204,15 @@ export default function ServerDetailPage() {
                   { title: "CPU", icon: Cpu, data: specs.cpu, color: "text-blue-400" },
                   { title: "内存", icon: MemoryStick, data: specs.memory, color: "text-emerald-400" },
                   { title: "磁盘", icon: HardDrive, data: specs.disk, color: "text-amber-400" },
-                  { title: "GPU / CUDA", icon: Cpu, data: `${specs.gpu || "—"}\n${specs.cuda || ""}`, color: "text-violet-400" },
+                  { title: "GPU", icon: Cpu, data: specs.gpu || "—", color: "text-violet-400" },
+                  { title: "NVLink", icon: Cpu, data: specs.nvlink || "—", color: "text-purple-400" },
+                  { title: "IB 网卡", icon: Wifi, data: specs.ib || "—", color: "text-indigo-400" },
+                  { title: "网络", icon: Wifi, data: specs.network || "—", color: "text-blue-400" },
+                  { title: "NUMA", icon: Cpu, data: specs.numa || "—", color: "text-green-400" },
+                  { title: "PCIe", icon: Cpu, data: specs.pcie || "—", color: "text-yellow-400" },
+                  { title: "CUDA", icon: Cpu, data: specs.cuda || "—", color: "text-orange-400" },
                   { title: "操作系统", icon: Monitor, data: `${specs.os || "—"}\nKernel: ${specs.kernel || "—"}`, color: "text-cyan-400" },
-                  { title: "Docker", icon: Activity, data: specs.docker || "—", color: "text-pink-400" },
+                  { title: "容器", icon: Activity, data: `${specs.docker || "—"}\n${specs.containerd || ""}\n${specs.k8s || ""}`, color: "text-pink-400" },
                 ].map((item) => (
                   <div key={item.title} className="rounded-lg bg-white/[0.02] border border-white/[0.04] p-4">
                     <div className="flex items-center gap-2 mb-2">

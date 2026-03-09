@@ -147,14 +147,21 @@ public class SshConnectivityService {
             keyFile = writeTempKey(privateKey);
 
             String script = String.join(" && ",
-                "echo __CPU_INFO__; lscpu | head -20",
-                "echo __MEM_INFO__; free -h",
-                "echo __DISK_INFO__; df -h /",
+                "echo __CPU_INFO__; lscpu",
+                "echo __MEM_INFO__; free -h && echo '---' && cat /proc/meminfo | head -20",
+                "echo __DISK_INFO__; df -h && echo '---' && lsblk -o NAME,SIZE,TYPE,MODEL,TRAN",
                 "echo __KERNEL__; uname -r",
-                "echo __OS__; cat /etc/os-release 2>/dev/null | head -5",
-                "echo __GPU_INFO__; nvidia-smi --query-gpu=name,memory.total,driver_version,compute_cap --format=csv,noheader 2>/dev/null || echo NO_GPU",
-                "echo __CUDA__; nvcc --version 2>/dev/null | tail -1 || echo NO_CUDA",
-                "echo __DOCKER__; docker --version 2>/dev/null || echo NO_DOCKER"
+                "echo __OS__; cat /etc/os-release 2>/dev/null",
+                "echo __GPU_INFO__; nvidia-smi --query-gpu=name,memory.total,driver_version,compute_cap,gpu_serial,uuid --format=csv,noheader 2>/dev/null || echo NO_GPU",
+                "echo __NVLINK_INFO__; nvidia-smi nvlink --status 2>/dev/null || echo NO_NVLINK",
+                "echo __IB_INFO__; (ibstat 2>/dev/null || ibv_devinfo 2>/dev/null || echo NO_IB) | head -50",
+                "echo __NETWORK_INFO__; ip link show && echo '---' && ethtool -i eth0 2>/dev/null || echo NO_ETH0",
+                "echo __NUMA_INFO__; numactl --hardware",
+                "echo __PCIE_INFO__; lspci -vv | grep -A 10 -B 2 'NVIDIA|MLX'",
+                "echo __CUDA__; nvcc --version 2>/dev/null || echo NO_CUDA",
+                "echo __DOCKER__; docker --version 2>/dev/null || echo NO_DOCKER",
+                "echo __K8S__; kubectl version --short 2>/dev/null || echo NO_K8S",
+                "echo __CONTAINERD__; containerd --version 2>/dev/null || echo NO_CONTAINERD"
             );
 
             String sshCmd = buildSshCommand(ip, port, username, keyFile, script);
@@ -183,9 +190,16 @@ public class SshConnectivityService {
             specs.put("disk", extractSection(raw, "__DISK_INFO__", "__KERNEL__"));
             specs.put("kernel", extractSection(raw, "__KERNEL__", "__OS__").trim());
             specs.put("os", extractSection(raw, "__OS__", "__GPU_INFO__"));
-            specs.put("gpu", extractSection(raw, "__GPU_INFO__", "__CUDA__"));
+            specs.put("gpu", extractSection(raw, "__GPU_INFO__", "__NVLINK_INFO__"));
+            specs.put("nvlink", extractSection(raw, "__NVLINK_INFO__", "__IB_INFO__"));
+            specs.put("ib", extractSection(raw, "__IB_INFO__", "__NETWORK_INFO__"));
+            specs.put("network", extractSection(raw, "__NETWORK_INFO__", "__NUMA_INFO__"));
+            specs.put("numa", extractSection(raw, "__NUMA_INFO__", "__PCIE_INFO__"));
+            specs.put("pcie", extractSection(raw, "__PCIE_INFO__", "__CUDA__"));
             specs.put("cuda", extractSection(raw, "__CUDA__", "__DOCKER__").trim());
-            specs.put("docker", extractAfter(raw, "__DOCKER__").trim());
+            specs.put("docker", extractSection(raw, "__DOCKER__", "__K8S__").trim());
+            specs.put("k8s", extractSection(raw, "__K8S__", "__CONTAINERD__").trim());
+            specs.put("containerd", extractAfter(raw, "__CONTAINERD__").trim());
             specs.put("collectedAt", System.currentTimeMillis());
 
         } catch (Exception e) {
