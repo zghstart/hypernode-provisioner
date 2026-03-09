@@ -222,7 +222,7 @@ public class ServerService {
             .passwordEncrypted(null)
             .privateKeyEncrypted(null)
             .sshKeyProfileId(server.getSshKeyProfileId())
-            .dataCenter(server.getDataCenter())
+            .dataCenter(null)
             .gpuTopology(server.getGpuTopology())
             .status(server.getStatus())
             .lastDeploymentVersion(server.getLastDeploymentVersion())

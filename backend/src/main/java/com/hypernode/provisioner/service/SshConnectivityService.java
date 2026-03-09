@@ -202,7 +202,7 @@ public class SshConnectivityService {
         String keyOpt = keyFile != null ? "-i " + keyFile.toAbsolutePath() + " " : "";
         return String.format(
             "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null " +
-            "-o ConnectTimeout=%d -o BatchMode=yes %s-p %d %s@%s '%s'",
+            "-o ConnectTimeout=%d -o BatchMode=yes %s -p %d %s@%s '%s'",
             CONNECT_TIMEOUT_SECONDS, keyOpt, p, username, ip,
             remoteCmd.replace("'", "'\"'\"'"));
     }
@@ -211,7 +211,13 @@ public class SshConnectivityService {
         if (privateKey == null || privateKey.isBlank()) return null;
         try {
             Path tmp = Files.createTempFile("hypernode-ssh-", ".key");
-            Files.writeString(tmp, privateKey);
+            // Convert Windows line endings to Unix and trim whitespace
+            String normalizedKey = privateKey.trim().replaceAll("\r\n", "\n");
+            // Ensure the key ends with a newline
+            if (!normalizedKey.endsWith("\n")) {
+                normalizedKey += "\n";
+            }
+            Files.writeString(tmp, normalizedKey);
             Files.setPosixFilePermissions(tmp, Set.of(
                 PosixFilePermission.OWNER_READ, PosixFilePermission.OWNER_WRITE));
             return tmp;
