@@ -273,7 +273,14 @@ public class SshConnectivityService {
                 if (v instanceof Number) {
                     sb.append(v);
                 } else {
-                    String s = String.valueOf(v).replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n");
+                    String s = String.valueOf(v)
+                        .replace("\\", "\\\\")
+                        .replace("\"", "\\\"")
+                        .replace("\n", "\\n")
+                        .replace("\t", "\\t")
+                        .replace("\r", "\\r")
+                        .replace("\b", "\\b")
+                        .replace("\f", "\\f");
                     sb.append("\"").append(s).append("\"");
                 }
                 first = false;
