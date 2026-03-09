@@ -200,30 +200,83 @@ export default function ServerDetailPage() {
           <CardContent>
             {specs ? (
               <div className="grid md:grid-cols-2 gap-4">
-                {[
-                  { title: "CPU", icon: Cpu, data: specs.cpu, color: "text-blue-400" },
-                  { title: "内存", icon: MemoryStick, data: specs.memory, color: "text-emerald-400" },
-                  { title: "磁盘", icon: HardDrive, data: specs.disk, color: "text-amber-400" },
-                  { title: "GPU", icon: Cpu, data: specs.gpu || "—", color: "text-violet-400" },
-                  { title: "NVLink", icon: Cpu, data: specs.nvlink || "—", color: "text-purple-400" },
-                  { title: "IB 网卡", icon: Wifi, data: specs.ib || "—", color: "text-indigo-400" },
-                  { title: "网络", icon: Wifi, data: specs.network || "—", color: "text-blue-400" },
-                  { title: "NUMA", icon: Cpu, data: specs.numa || "—", color: "text-green-400" },
-                  { title: "PCIe", icon: Cpu, data: specs.pcie || "—", color: "text-yellow-400" },
-                  { title: "CUDA", icon: Cpu, data: specs.cuda || "—", color: "text-orange-400" },
-                  { title: "操作系统", icon: Monitor, data: `${specs.os || "—"}\nKernel: ${specs.kernel || "—"}`, color: "text-cyan-400" },
-                  { title: "容器", icon: Activity, data: `${specs.docker || "—"}\n${specs.containerd || ""}\n${specs.k8s || ""}`, color: "text-pink-400" },
-                ].map((item) => (
-                  <div key={item.title} className="rounded-lg bg-white/[0.02] border border-white/[0.04] p-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      <item.icon className={`h-4 w-4 ${item.color}`} />
-                      <span className="text-xs font-medium text-slate-300">{item.title}</span>
-                    </div>
-                    <pre className="text-xs text-slate-400 font-mono whitespace-pre-wrap leading-relaxed max-h-40 overflow-y-auto custom-scrollbar">
-                      {item.data || "—"}
-                    </pre>
+                {/* Hardware Section */}
+                <div className="md:col-span-2">
+                  <h3 className="text-sm font-medium text-slate-300 mb-3 flex items-center gap-2">
+                    <Cpu className="h-4 w-4 text-blue-400" />
+                    硬件配置
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {[
+                      { title: "CPU", icon: Cpu, data: specs.cpu, color: "text-blue-400" },
+                      { title: "内存", icon: MemoryStick, data: specs.memory, color: "text-emerald-400" },
+                      { title: "磁盘", icon: HardDrive, data: specs.disk, color: "text-amber-400" },
+                      { title: "网络", icon: Wifi, data: specs.network || "—", color: "text-blue-400" },
+                    ].map((item) => (
+                      <div key={item.title} className="rounded-lg bg-white/[0.02] border border-white/[0.04] p-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <item.icon className={`h-4 w-4 ${item.color}`} />
+                          <span className="text-xs font-medium text-slate-300">{item.title}</span>
+                        </div>
+                        <pre className="text-xs text-slate-400 font-mono whitespace-pre-wrap leading-relaxed max-h-40 overflow-y-auto custom-scrollbar">
+                          {item.data || "—"}
+                        </pre>
+                      </div>
+                    ))}
                   </div>
-                ))}
+                </div>
+
+                {/* GPU Section */}
+                <div className="md:col-span-2">
+                  <h3 className="text-sm font-medium text-slate-300 mb-3 flex items-center gap-2">
+                    <Cpu className="h-4 w-4 text-violet-400" />
+                    GPU 配置
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {[
+                      { title: "GPU", icon: Cpu, data: specs.gpu || "—", color: "text-violet-400" },
+                      { title: "NVLink", icon: Cpu, data: specs.nvlink || "—", color: "text-purple-400" },
+                      { title: "IB 网卡", icon: Wifi, data: specs.ib || "—", color: "text-indigo-400" },
+                      { title: "PCIe", icon: Cpu, data: specs.pcie || "—", color: "text-yellow-400" },
+                    ].map((item) => (
+                      <div key={item.title} className="rounded-lg bg-white/[0.02] border border-white/[0.04] p-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <item.icon className={`h-4 w-4 ${item.color}`} />
+                          <span className="text-xs font-medium text-slate-300">{item.title}</span>
+                        </div>
+                        <pre className="text-xs text-slate-400 font-mono whitespace-pre-wrap leading-relaxed max-h-40 overflow-y-auto custom-scrollbar">
+                          {item.data || "—"}
+                        </pre>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Software Section */}
+                <div className="md:col-span-2">
+                  <h3 className="text-sm font-medium text-slate-300 mb-3 flex items-center gap-2">
+                    <Monitor className="h-4 w-4 text-cyan-400" />
+                    软件配置
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {[
+                      { title: "操作系统", icon: Monitor, data: `${specs.os || "—"}\nKernel: ${specs.kernel || "—"}`, color: "text-cyan-400" },
+                      { title: "CUDA", icon: Cpu, data: specs.cuda || "—", color: "text-orange-400" },
+                      { title: "容器", icon: Activity, data: `${specs.docker || "—"}\n${specs.containerd || ""}\n${specs.k8s || ""}`, color: "text-pink-400" },
+                      { title: "NUMA", icon: Cpu, data: specs.numa || "—", color: "text-green-400" },
+                    ].map((item) => (
+                      <div key={item.title} className="rounded-lg bg-white/[0.02] border border-white/[0.04] p-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <item.icon className={`h-4 w-4 ${item.color}`} />
+                          <span className="text-xs font-medium text-slate-300">{item.title}</span>
+                        </div>
+                        <pre className="text-xs text-slate-400 font-mono whitespace-pre-wrap leading-relaxed max-h-40 overflow-y-auto custom-scrollbar">
+                          {item.data || "—"}
+                        </pre>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             ) : (
               <div className="text-center py-12">

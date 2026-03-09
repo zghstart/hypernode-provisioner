@@ -156,9 +156,9 @@ public class SshConnectivityService {
                 "echo __NVLINK_INFO__; nvidia-smi nvlink --status 2>/dev/null || echo NO_NVLINK",
                 "echo __IB_INFO__; (ibstat 2>/dev/null || ibv_devinfo 2>/dev/null || echo NO_IB) | head -50",
                 "echo __NETWORK_INFO__; ip link show && echo '---' && ethtool -i eth0 2>/dev/null || echo NO_ETH0",
-                "echo __NUMA_INFO__; numactl --hardware",
-                "echo __PCIE_INFO__; lspci -vv | grep -A 10 -B 2 'NVIDIA|MLX'",
-                "echo __CUDA__; nvcc --version 2>/dev/null || echo NO_CUDA",
+                "echo __NUMA_INFO__; (numactl --hardware 2>/dev/null || lscpu | grep -i numa 2>/dev/null || echo NO_NUMA)",
+                "echo __PCIE_INFO__; (lspci -vv | grep -A 10 -B 2 'NVIDIA|MLX' 2>/dev/null || lspci -v | grep -A 5 -B 1 'NVIDIA|MLX' 2>/dev/null || echo NO_PCIE) | head -30",
+                "echo __CUDA__; (nvcc --version 2>/dev/null || nvidia-smi --query-cuda-version=version --format=csv,noheader 2>/dev/null || echo NO_CUDA)",
                 "echo __DOCKER__; docker --version 2>/dev/null || echo NO_DOCKER",
                 "echo __K8S__; kubectl version --short 2>/dev/null || echo NO_K8S",
                 "echo __CONTAINERD__; containerd --version 2>/dev/null || echo NO_CONTAINERD"
