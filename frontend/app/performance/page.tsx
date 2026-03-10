@@ -83,6 +83,7 @@ export default function PerformanceTestPage() {
     setIsRefreshing(true)
     try {
       const results = await apiClient.getPerformanceTestResults(selectedServer)
+      console.log('Test results loaded:', results)
       setTestResults(results)
     } catch (err) {
       console.error('Failed to load test results:', err)
@@ -133,15 +134,13 @@ export default function PerformanceTestPage() {
           throw new Error('未知测试类型')
       }
       setSuccess(`测试已开始执行: ${response?.message || '任务已提交'}`)
-      // 延迟加载结果
-      setTimeout(() => {
+      // 立即加载结果
+      loadTestResults()
+      // 每2秒刷新一次结果，持续30秒
+      const interval = setInterval(() => {
         loadTestResults()
-        // 每2秒刷新一次结果，持续30秒
-        const interval = setInterval(() => {
-          loadTestResults()
-        }, 2000)
-        setTimeout(() => clearInterval(interval), 30000)
       }, 2000)
+      setTimeout(() => clearInterval(interval), 30000)
     } catch (err: any) {
       console.error('测试执行错误:', err)
       setError(err.message || '测试执行失败')
