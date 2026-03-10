@@ -23,6 +23,7 @@ const navItems = [
   { title: "凭证管理", href: "/keys", icon: KeyRound },
   { title: "节点管理", href: "/servers", icon: Server },
   { title: "部署任务", href: "/tasks", icon: Play },
+  { title: "性能测试", href: "/performance", icon: Cpu },
   { title: "压测监控", href: "/benchmark", icon: Gauge },
   { title: "配置模板", href: "/templates", icon: FileCode },
   { title: "审计日志", href: "/audit", icon: ShieldCheck },

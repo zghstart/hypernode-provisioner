@@ -41,11 +41,6 @@ public class BenchmarkController {
     public ResponseEntity<Map<String, Object>> getGpuBurnResults(@PathVariable String serverId) {
         List<Map<String, Object>> metrics = benchmarkService.parseGpuBurnLog(serverId);
 
-        if (metrics.isEmpty()) {
-            String logPath = "/tmp/benchmark_results/gpu-burn.log";
-            metrics = dcgmLogParser.parseSimpleDcgmFormat(logPath);
-        }
-
         return ResponseEntity.ok(Map.of(
             "serverId", serverId,
             "metrics", metrics,

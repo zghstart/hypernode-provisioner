@@ -202,6 +202,51 @@ export class ApiClient {
     return this.get(`/benchmark/dcgm-data/${serverId}`)
   }
 
+  // Performance Test API
+  async runEnvironmentCheck(serverId: string): Promise<any> {
+    return this.post('/performance/env-check', { serverId })
+  }
+
+  async runGemmTest(serverId: string, matrixSize?: number): Promise<any> {
+    return this.post('/performance/gemm', { serverId, matrixSize })
+  }
+
+  async runMemoryBandwidthTest(serverId: string): Promise<any> {
+    return this.post('/performance/memory-bandwidth', { serverId })
+  }
+
+  async runDiskIOTest(serverId: string): Promise<any> {
+    return this.post('/performance/disk-io', { serverId })
+  }
+
+  async runGpuTopologyTest(serverId: string): Promise<any> {
+    return this.post('/performance/gpu-topology', { serverId })
+  }
+
+  async runNcclTest(serverId: string, testType?: string): Promise<any> {
+    return this.post('/performance/nccl', { serverId, testType })
+  }
+
+  async runGpuBurnTest(serverId: string, duration?: number): Promise<any> {
+    return this.post('/performance/gpu-burn', { serverId, duration })
+  }
+
+  async runInferenceTest(serverId: string): Promise<any> {
+    return this.post('/performance/inference', { serverId })
+  }
+
+  async runAllTests(serverId: string): Promise<any> {
+    return this.post('/performance/run-all', { serverId })
+  }
+
+  async getPerformanceTestResults(serverId: string): Promise<any> {
+    return this.get(`/performance/results/${serverId}`)
+  }
+
+  async getPerformanceTestResult(id: string): Promise<any> {
+    return this.get(`/performance/result/${id}`)
+  }
+
   async getPerformanceReport(serverId: string): Promise<any> {
     return this.get(`/benchmark/report/${serverId}`)
   }

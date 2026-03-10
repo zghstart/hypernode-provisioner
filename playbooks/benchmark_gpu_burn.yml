@@ -1,0 +1,69 @@
+---
+# GPU Burn Benchmark Playbook
+# 执行 GPU 烤机测试并收集性能数据
+
+- name: Run GPU Burn Benchmark
+  hosts: gpu_nodes
+  gather_facts: true
+  become: true
+
+  vars:
+    gpu_burn_duration: 300
+    output_dir: /tmp/hypernode-benchmark
+
+  tasks:
+    - name: Create output directory
+      file:
+        path: "{{ output_dir }}"
+        state: directory
+        mode: '0755'
+
+    - name: Check if gpu-burn is installed
+      stat:
+        path: /usr/local/bin/gpu-burn
+      register: gpu_burn_stat
+
+    - name: Install gpu-burn if not present
+      block:
+        - name: Install dependencies
+          apt:
+            name:
+              - git
+              - build-essential
+              - make
+              - gcc
+            state: present
+            update_cache: true
+
+        - name: Clone gpu-burn repository
+          git:
+            repo: https://github.com/wilicc/gpu-burn.git
+            dest: /tmp/gpu-burn
+            version: master
+
+        - name: Build gpu-burn
+          shell:
+            cmd: make
+            chdir: /tmp/gpu-burn
+
+        - name: Install gpu-burn
+          copy:
+            src: /tmp/gpu-burn/gpu_burn
+            dest: /usr/local/bin/gpu-burn
+            mode: '0755'
+      when: not gpu_burn_stat.stat.exists
+
+    - name: Run GPU burn test
+      shell:
+        cmd: timeout {{ gpu_burn_duration }}s /usr/local/bin/gpu-burn 60 2>&1 | tee "{{ output_dir }}/gpu-burn.log"
+      register: gpu_burn_result
+      ignore_errors: true
+
+    - name: Get GPU burn exit code
+      set_fact:
+        gpu_burn_exit_code: "{{ gpu_burn_result.rc }}"
+
+    - name: Clean up temporary files
+      file:
+        path: /tmp/gpu-burn
+        state: absent

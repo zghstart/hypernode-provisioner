@@ -50,14 +50,12 @@ spring:
 
   # Flyway database migration
   flyway:
-    enabled: true
-    baseline-on-migrate: true
-    locations: classpath:db/migration
+    enabled: false
 
   # JPA configuration
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update
     show-sql: true
     properties:
       hibernate:

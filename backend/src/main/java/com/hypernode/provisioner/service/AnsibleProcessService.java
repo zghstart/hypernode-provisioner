@@ -31,7 +31,14 @@ public class AnsibleProcessService {
         try {
             ProcessBuilder builder = new ProcessBuilder();
 
-            builder.command("bash", "-c", buildCommand(playbookPath, inventoryPath, extraVars));
+            // 构建命令，添加 --limit 参数来指定目标主机
+            String targetHost = extraVars.get("target_host");
+            String command = buildCommand(playbookPath, inventoryPath, extraVars);
+            if (targetHost != null) {
+                command += " --limit " + targetHost;
+            }
+
+            builder.command("bash", "-c", command);
             builder.redirectErrorStream(true);
 
             return builder.start();

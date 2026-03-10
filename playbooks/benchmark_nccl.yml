@@ -1,0 +1,57 @@
+---
+# NCCL Benchmark Playbook
+# 执行 NCCL 网络测试并收集性能数据
+
+- name: Run NCCL Benchmark
+  hosts: gpu_nodes
+  gather_facts: true
+  become: true
+
+  vars:
+    nccl_test_type: all_reduce
+    output_dir: /tmp/hypernode-benchmark
+
+  tasks:
+    - name: Create output directory
+      file:
+        path: "{{ output_dir }}"
+        state: directory
+        mode: '0755'
+
+    - name: Check if NCCL tests are available
+      stat:
+        path: /usr/local/cuda/extras/nccl/tests
+      register: nccl_tests_stat
+
+    - name: Install NCCL tests if not present
+      block:
+        - name: Install CUDA if not present
+          apt:
+            name:
+              - nvidia-cuda-toolkit
+            state: present
+            update_cache: true
+          when: not nccl_tests_stat.stat.exists
+
+    - name: Run NCCL all_reduce test
+      shell:
+        cmd: timeout 300s /usr/local/cuda/extras/nccl/tests/all_reduce_perf -b 8 -e 128M -f 2 -g 1 2>&1 | tee "{{ output_dir }}/nccl-results.log"
+      register: nccl_result
+      ignore_errors: true
+      when: nccl_test_type == 'all_reduce' and nccl_tests_stat.stat.exists
+
+    - name: Run NCCL broadcast test
+      shell:
+        cmd: timeout 300s /usr/local/cuda/extras/nccl/tests/broadcast_perf -b 8 -e 128M -f 2 -g 1 2>&1 | tee "{{ output_dir }}/nccl-results.log"
+      register: nccl_result
+      ignore_errors: true
+      when: nccl_test_type == 'broadcast' and nccl_tests_stat.stat.exists
+
+    - name: Fallback to simple NCCL test if CUDA is not installed
+      shell:
+        cmd: echo "NCCL tests not available - CUDA not installed" > "{{ output_dir }}/nccl-results.log"
+      when: not nccl_tests_stat.stat.exists
+
+    - name: Get NCCL test exit code
+      set_fact:
+        nccl_exit_code: "{{ nccl_result.rc | default(0) }}"
