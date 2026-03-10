@@ -462,7 +462,7 @@ for bs in batch_sizes:
                               <Code className="h-4 w-4 text-cyan-400" />
                               <span className="text-sm font-medium text-slate-300">测试脚本</span>
                             </div>
-                            <pre className="text-xs text-slate-400 font-mono whitespace-pre-wrap max-h-64 overflow-y-auto p-2 bg-slate-900/50 rounded">
+                            <pre className="text-xs text-slate-400 font-mono whitespace-pre-wrap max-h-64 overflow-y-auto p-4 bg-slate-900/80 rounded-lg border border-slate-700/50 shadow-inner">
                               {getTestScript('env_check')}
                             </pre>
                           </div>
@@ -494,7 +494,7 @@ for bs in batch_sizes:
                               <Code className="h-4 w-4 text-cyan-400" />
                               <span className="text-sm font-medium text-slate-300">测试脚本</span>
                             </div>
-                            <pre className="text-xs text-slate-400 font-mono whitespace-pre-wrap max-h-64 overflow-y-auto p-2 bg-slate-900/50 rounded">
+                            <pre className="text-xs text-slate-400 font-mono whitespace-pre-wrap max-h-64 overflow-y-auto p-4 bg-slate-900/80 rounded-lg border border-slate-700/50 shadow-inner">
                               {getTestScript('gemm')}
                             </pre>
                           </div>
@@ -513,7 +513,7 @@ for bs in batch_sizes:
                               <Code className="h-4 w-4 text-cyan-400" />
                               <span className="text-sm font-medium text-slate-300">测试脚本</span>
                             </div>
-                            <pre className="text-xs text-slate-400 font-mono whitespace-pre-wrap max-h-64 overflow-y-auto p-2 bg-slate-900/50 rounded">
+                            <pre className="text-xs text-slate-400 font-mono whitespace-pre-wrap max-h-64 overflow-y-auto p-4 bg-slate-900/80 rounded-lg border border-slate-700/50 shadow-inner">
                               {getTestScript('memory_bandwidth')}
                             </pre>
                           </div>
@@ -532,7 +532,7 @@ for bs in batch_sizes:
                               <Code className="h-4 w-4 text-cyan-400" />
                               <span className="text-sm font-medium text-slate-300">测试脚本</span>
                             </div>
-                            <pre className="text-xs text-slate-400 font-mono whitespace-pre-wrap max-h-64 overflow-y-auto p-2 bg-slate-900/50 rounded">
+                            <pre className="text-xs text-slate-400 font-mono whitespace-pre-wrap max-h-64 overflow-y-auto p-4 bg-slate-900/80 rounded-lg border border-slate-700/50 shadow-inner">
                               {getTestScript('disk_io')}
                             </pre>
                           </div>
@@ -551,7 +551,7 @@ for bs in batch_sizes:
                               <Code className="h-4 w-4 text-cyan-400" />
                               <span className="text-sm font-medium text-slate-300">测试脚本</span>
                             </div>
-                            <pre className="text-xs text-slate-400 font-mono whitespace-pre-wrap max-h-64 overflow-y-auto p-2 bg-slate-900/50 rounded">
+                            <pre className="text-xs text-slate-400 font-mono whitespace-pre-wrap max-h-64 overflow-y-auto p-4 bg-slate-900/80 rounded-lg border border-slate-700/50 shadow-inner">
                               {getTestScript('gpu_topology')}
                             </pre>
                           </div>
@@ -584,7 +584,7 @@ for bs in batch_sizes:
                               <Code className="h-4 w-4 text-cyan-400" />
                               <span className="text-sm font-medium text-slate-300">测试脚本</span>
                             </div>
-                            <pre className="text-xs text-slate-400 font-mono whitespace-pre-wrap max-h-64 overflow-y-auto p-2 bg-slate-900/50 rounded">
+                            <pre className="text-xs text-slate-400 font-mono whitespace-pre-wrap max-h-64 overflow-y-auto p-4 bg-slate-900/80 rounded-lg border border-slate-700/50 shadow-inner">
                               {getTestScript('nccl')}
                             </pre>
                           </div>
@@ -616,7 +616,7 @@ for bs in batch_sizes:
                               <Code className="h-4 w-4 text-cyan-400" />
                               <span className="text-sm font-medium text-slate-300">测试脚本</span>
                             </div>
-                            <pre className="text-xs text-slate-400 font-mono whitespace-pre-wrap max-h-64 overflow-y-auto p-2 bg-slate-900/50 rounded">
+                            <pre className="text-xs text-slate-400 font-mono whitespace-pre-wrap max-h-64 overflow-y-auto p-4 bg-slate-900/80 rounded-lg border border-slate-700/50 shadow-inner">
                               {getTestScript('gpu_burn')}
                             </pre>
                           </div>
@@ -635,7 +635,7 @@ for bs in batch_sizes:
                               <Code className="h-4 w-4 text-cyan-400" />
                               <span className="text-sm font-medium text-slate-300">测试脚本</span>
                             </div>
-                            <pre className="text-xs text-slate-400 font-mono whitespace-pre-wrap max-h-64 overflow-y-auto p-2 bg-slate-900/50 rounded">
+                            <pre className="text-xs text-slate-400 font-mono whitespace-pre-wrap max-h-64 overflow-y-auto p-4 bg-slate-900/80 rounded-lg border border-slate-700/50 shadow-inner">
                               {getTestScript('inference')}
                             </pre>
                           </div>

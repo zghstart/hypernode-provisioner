@@ -230,8 +230,8 @@ public class PerformanceTestService {
             echo '  ],'
             echo '  "network": ['
             ip link show | grep -E "^[0-9]+:" | while read -r line; do
-                iface=$(echo $line | awk '{print $2}' | tr -d :)'
-                state=$(echo $line | grep -oP 'state\\S+' | cut -d'<' -f2 | cut -d'>' -f1)'"
+                iface=$(echo $line | awk '{print $2}' | tr -d :)
+                state=$(echo $line | grep -oP 'state\\S+' | cut -d'<' -f2 | cut -d'>' -f1)
                 echo '    {'
                 echo '      "interface": "'$iface'",'
                 echo '      "state": "'$state'"'
